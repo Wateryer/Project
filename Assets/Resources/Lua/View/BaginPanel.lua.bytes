@@ -1,0 +1,22 @@
+local transform;
+local gameObject;
+
+BaginPanel = {};
+local this = BaginPanel;
+
+--启动事件--
+function this.Awake(obj)
+	gameObject = obj;
+	transform = obj.transform;
+	this.InitPanel();
+end
+
+--初始化面板--
+function this.InitPanel()
+	BaginPanel.btnBagin = GameObject.Find("Button");
+end
+
+--单击事件--
+function this.OnDestroy()
+	logWarn("OnDestroy---->>>");
+end

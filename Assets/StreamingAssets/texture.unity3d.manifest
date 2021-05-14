@@ -1,0 +1,18 @@
+ManifestFileVersion: 0
+CRC: 3937547943
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: bb7a7fa5867c127047b542b32a25bacb
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 9dea23ffc7e96552740e12d1ee5309d8
+HashAppended: 0
+ClassTypes:
+- Class: 28
+  Script: {instanceID: 0}
+- Class: 213
+  Script: {instanceID: 0}
+Assets:
+- Assets/Resources/Texture/main.png
+Dependencies: []

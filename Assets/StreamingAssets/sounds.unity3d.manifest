@@ -1,0 +1,21 @@
+ManifestFileVersion: 0
+CRC: 240405066
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: 09bb16b8babc6811b4431aece950e361
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: c516f2a3b2b6b67ef759f6410a790acd
+HashAppended: 0
+ClassTypes:
+- Class: 83
+  Script: {instanceID: 0}
+Assets:
+- Assets/Resources/Sounds/jump3.mp3
+- Assets/Resources/Sounds/jump2.mp3
+- Assets/Resources/Sounds/jump1.mp3
+- Assets/Resources/Sounds/jump5.mp3
+- Assets/Resources/Sounds/jump4.mp3
+- Assets/Resources/Sounds/lose.mp3
+Dependencies: []

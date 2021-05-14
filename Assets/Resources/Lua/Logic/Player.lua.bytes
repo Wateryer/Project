@@ -1,0 +1,163 @@
+--人物逻辑
+Player = {}
+--require('Logic/Continue')
+--require('Music')
+local this = Player
+local player
+local transform
+local head
+local body
+local rigidbody
+local particle
+local cube
+--local endUI
+local isRotate=false
+local isJump = false;
+--local isPress = false;
+local degree=0
+local plane
+local planeTra
+local Text
+local score=0
+local pressTime=0
+local isGameOver=false
+local offset=Vector3(0,0,0)
+function this.Awake(obj)
+	player=obj
+	transform=player.transform
+	startRotation=transform.rotation
+	Util.DOMoveEase(player,transform.position-Vector3(0,3,0),0.5,false,5,0.5,nil)
+	this.moveDir=Vector3(1,0,0)
+	this.rotateDir=Vector3(0,0,-1)
+	UpdateBeat:Add(Update,self)
+	Time.timeScale = 1
+	plane=GameObject.Find('Plane')
+	planeTra=plane.transform
+	--endUI=GameObject.Find('EndUI')
+	--endUI:SetActive(false)
+	head = transform : Find('Head').gameObject
+	body = transform : Find('Body').gameObject
+	--cube=GameObject.Find('Cube')
+	--this.newBox=GameObject.Find('Cube2')
+	cube=BaginCtrl.cube1
+	this.newBox=BaginCtrl.cube2
+	rigidbody = player : GetComponent('Rigidbody')
+	particle = transform:Find('Particle').gameObject
+	particle : GetComponent('ParticleSystem') : Stop()
+	Text=GameObject.Find('Text'):GetComponent('Text')
+	this.isPress=false
+	
+end
+
+function Update()
+	if isGameOver then
+		return
+	end
+	if not isJump and Input.GetMouseButtonDown(0) then
+		this.isPress = true;
+		particle:SetActive(true)
+		particle : GetComponent('ParticleSystem') : Play()
+		--rigidbody.isKinematic=true
+		--startTime = Time.time--获取按下空格时的时间
+		--startTime=startTime+Time.deltaTime
+	end
+
+	if not isJump and Input.GetMouseButtonUp(0) then
+		if pressTime==0 then
+			return
+		end
+		--rigidbody.constraints=RigidbodyConstraints.None
+		this.isPress = false;
+		isJump=true
+		--DoTween恢复人物
+		Util.DoScale(body, 1, 0.1)
+		Util.DoLocalMoveY(head, 1.5, 0.1)
+		Util.DOScaleYEase(cube,1,0.5,5,0.2,nil)
+		particle : GetComponent('ParticleSystem') : Stop()
+		particle:SetActive(false)
+		Util.DOJump(player,Vector3(transform.position.x,3,transform.position.z)+this.moveDir*pressTime*10+offset,5,1,0.5,false,this.JumpEnd)
+		Util.DORotate(player,this.rotateDir*360,0.3,0,0)
+		--this.StartJump(pressTime)
+		pressTime=0
+	end
+    if isJump then
+		--rigidbody : AddForce(-Vector3.up * downFor)
+	end
+	if this.isPress then
+		pressTime=pressTime+Time.deltaTime
+		--人物压缩效果
+		if body.transform.localScale.y <=1 and body.transform.localScale.y > 0.5 then
+			body.transform.localScale = body.transform.localScale + Vector3(0, -1, 0) * 0.5 * Time.deltaTime
+			head.transform.localPosition = head.transform.localPosition + Vector3(0, -1, 0) * 1 * Time.deltaTime
+			transform.localPosition=transform.localPosition+Vector3(0, -1, 0) * 1 *Time.deltaTime
+		end
+		if cube.transform.localScale.y < 1.1 and cube.transform.localScale.y > 0.5 then
+			Util.DoScaleY(cube, 1-0.5 * pressTime,Time.deltaTime)
+        end
+	end
+	if isRotate then
+		this.Rotate()
+	end
+end
+
+function this.StartJump(time)
+    isRotate=true
+	isJump = true
+end
+function this.JumpEnd()
+	isJump=false
+	--rigidbody.isKinematic=false
+	local oldDis=(Vector3(transform.position.x,0,transform.position.z)-Vector3(cube.transform.position.x,0,cube.transform.position.z)).magnitude
+	local newDis=(Vector3(transform.position.x,0,transform.position.z)-Vector3(this.newBox.transform.position.x,0,this.newBox.transform.position.z)).magnitude
+	if oldDis>cube.transform.localScale.x*2.5 and newDis>this.newBox.transform.localScale.x*2.5 then
+		isGameOver=true
+		rigidbody.centerOfMass=Vector3(0,3,0)
+		this.GameOver()
+	elseif newDis<=this.newBox.transform.localScale.x*2.5 then
+		rigidbody.centerOfMass=Vector3(0,0,0)
+		this.CreateNewBox()
+		offset =Vector3( cube.transform.position.x-transform.position.x,0,cube.transform.position.z-transform.position.z)
+	else
+	    offset =Vector3(0,0,0)
+	end
+end
+function this.Rotate()
+	if body.transform.localScale.y <0.8 then
+		return
+	end
+	transform:Rotate(this.rotateDir*Time.deltaTime * 800);
+    degree = degree+Time.deltaTime * 800;
+	if degree > 355 then
+		isRotate = false;
+		--rigidbody.freezeRotation = true;
+		degree = 0;
+	end
+end
+function this.CreateNewBox()
+	isJump = false
+	cube=this.newBox
+	if(cube:GetComponent('BoxContro') == nil) then
+		cube:AddComponent(typeof(BoxContro))
+		score=score+2
+		Text.text=score
+		this.CameraMove()
+	end
+end
+
+function this.GameOver()
+	rigidbody.isKinematic=false
+	coroutine.start(EndUI)
+end
+function this.CameraMove()
+	require('Logic/BoxControl')
+	--DoTween控制摄像机移动效果
+	planeTra.position=Vector3(transform.position.x,0,transform.position.z)
+end
+function EndUI()
+	coroutine.wait(3)
+	local ctrl= CtrlManager.GetCtrl(CtrlNames.End)
+	ctrl:ShowUI()
+    --endUI:SetActive(true)
+end
+
+
